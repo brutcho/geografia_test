@@ -1,0 +1,138 @@
+html {margin: 0; padding: 0; position: relative;}
+body {margin: 0; padding: 0; /*background: url(bg.jpg) top center;*/ font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;}
+#content {margin: 0 auto; width: 890px;}
+.calendar-panel {background: rgba(243,243,243,0.5); height: 32px; padding: 48px 40px 10px 40px; border-bottom: 2px solid rgba(218,218,218,1);}
+.btn { border: none; height: 24px; border-radius: 3px;  margin: 0px 5px; padding: 0 8px; display: inline-block;}
+.btn-default { border: 1px solid #ccc; background: #fff; color: #969696; cursor: pointer;}
+.btn-blue {background: #0271c7; color: #fff; box-shadow: 1px 1px 1px #0068c1; text-shadow: 1px 1px 2px #005094;}
+
+.btn-prev { width: 16px; height: 16px; background: #fff url(icons.jpg)2px -31px no-repeat; color: transparent; font-size: 8px; }
+.btn-next { width: 16px; height: 16px; background: #fff url(icons.jpg)1px -16px no-repeat; color: transparent; font-size: 8px; }
+.btn-today {height: 18px; line-height: 18px; vertical-align: middle;}
+.panel-left { width: 405px; float: left;}
+.panel-right { width: 405px; float: left; text-align: right; position: relative;}
+.search { height: 22px; width: 180px; border-radius: 3px; border: 1px solid #e2e2e2; padding: 0 10px;  }
+.icon-search {background: url(icons.jpg) 0px 5px no-repeat; width: 15px; height: 22px; display: inline-block; vertical-align: middle;}
+.calendar-body {padding: 8px 40px 10px 40px;}
+.calendar-date {padding-bottom: 10px; }
+
+.calendar-date__current {font-size: 14px; color: #555; vertical-align: middle; display: inline-block; width: 100px; text-align: center;}
+.weekend {background: #fefdfd;}
+table, tr, td {
+    border: 1px solid #ddd;
+    border-spacing: 0px;
+}
+tbody {
+    display: table-row-group;
+    vertical-align: middle;
+    border-color: inherit;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+tr {
+    height: 100px;
+}
+
+th, td {
+    vertical-align: top;
+    padding: 6px;
+    font-size: 10px;
+    color: #aaa;
+    width: 14%;
+    cursor: pointer;
+}
+
+th {text-align: left;}
+td {
+    position: relative;
+}
+td.active {
+    background: #c2e4fe;
+    position: relative;
+}
+td.current {
+    background: #f4f4f4;
+}
+
+.add-form {
+    position: relative;
+    margin-top: 10px;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #ccc;
+    height: 60px;
+    width: 260px;
+    box-shadow: -1px 1px 3px #bbb;
+    border-radius: 3px;
+    position: absolute;
+    z-index: 2; 
+}
+
+.search-results {
+    display: none;
+    position: relative;
+    margin-top: 10px;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #ccc;
+    height: 60px;
+    width: 300px;
+    text-align: right;
+    box-shadow: -1px 1px 3px #bbb;
+    border-radius: 3px;
+    position: absolute;
+    z-index: 2;
+    font-size: 10px; 
+    right:0;
+}
+
+.add-form-advanced, .add-form-edit {
+    position: relative;
+    margin-top: 10px;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #ccc;
+    width: 260px;
+    box-shadow: -1px 1px 3px #bbb;
+    border-radius: 3px;
+    position: absolute; 
+    right: -320px; 
+    top: -32px;
+    z-index: 2; 
+}
+
+.btnClose {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    color: #bbb;
+    cursor: pointer;
+    display: block;
+    width: 14px;
+    height: 14px;
+    font-size: 12px;
+    text-align: center;
+    line-height: 14px;
+}
+
+.add-form>input, .add-form-advanced>input {
+    width: 260px;
+    margin-bottom: 10px;
+    height: 22px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+.add-form-advanced>textarea, .add-form-edit>textarea {
+    width: 260px;
+    margin-bottom: 10px;
+    height: 60px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+.add-form>button {
+    height: 22px;
+}

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>география календарь!</title>
+        <link rel="stylesheet" href="style.css" />
+        <script>
+            if(!String.prototype.trim){  
+              String.prototype.trim = function(){  
+                return this.replace(/^\s+|\s+$/g,'');  
+              };  
+            }
+        </script>
+
+    </head>
+    <body>
+        <div id="content">
+            <div class="calendar-panel">
+                <div id="sidebar" class="panel-left">
+                    <button id="add" class="btn btn-blue add">Добавить</button>
+                    <button id="update" class="btn btn-blue update">Обновить</button>
+                </div>
+                <div class="panel-right">
+                    <span class="icon-search"></span>
+                    <input id="search" type="text" class="search" placeholder="Событие, дата или участник">
+                    <div id="results" class="search-results"></div>
+                </div>
+                
+            </div>
+            <div class="calendar calendar-body">
+                <div class="calendar-date">
+                    <button id="prev" class="btn btn-prev btn-default"><</button>
+                    <span id="current" class="calendar-date__current"></span>
+                    <button id="next" class="btn btn-next btn-default">></button>
+                    <button id="today" class="btn btn-today btn-default">Сегодня</button>
+                </div>
+                <div id="calendar-table">
+                </div>
+            </div>
+        </div>
+    
+    <script src="calendar.js"></script>
+    </body>
+</html>
