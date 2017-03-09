@@ -1,9 +1,42 @@
 (function() {
-
-
-    var Calendar = (function(timestamp) {
-    
-    var rowTotal   = 5;
+    var Calendar = (function() {
+    var prop = {
+            DAY: 86400000,
+            rowTotal: 5,
+            local: {
+                week: [
+                    'Понедельник',
+                    'Вторник',
+                    'Среда',
+                    'Четверг',
+                    'Пятница',
+                    'Суббота',
+                    'Воскресенье'],
+                day: "день",
+                month: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль',
+                    'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
+                monthList: [
+                    'января',
+                    'февраля',
+                    'марта',
+                    'апреля',
+                    'мая',
+                    'июня',
+                    'июля',
+                    'августа',
+                    'сентября',
+                    'октября',
+                    'ноября',
+                    'декабря'
+                ],
+                year: "год"
+            },
+            currentDate: {
+                month: (new Date()).getMonth(),
+                year: (new Date()).getFullYear()
+            },
+            dialog: false
+        };
     var Events = JSON.parse(localStorage.getItem('Events')) || [];
     //  [
     //     {
@@ -21,32 +54,7 @@
     //         description: "Ужин в ресторане"            
     //     }
     // ];
-    var currentDate = {
-        month: (new Date()).getMonth(),
-        year: (new Date()).getFullYear()
-    };
     var _currentDay;
-    var local = {
-            week: [
-                'Понедельник',
-                'Вторник',
-                'Среда',
-                'Четверг',
-                'Пятница',
-                'Суббота',
-                'Воскресенье'],
-            day: "день",
-            month: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль',
-                'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
-            year: "год"
-        };
-    var params = {
-            uid: null,
-            timestamp: timestamp ? timestamp : (new Date().getTime()),
-            // age: age ? age : 0,
-            // day: day ? day : 1,
-            lang: "ru"
-        };
 
     /**
      * ПОЛУЧИТЬ ТЕКУЩИЙ ДЕНЬ В МИЛЛИСЕКУНДАХ С УСТАНОВЛЕННЫМ ВРЕМЕНЕМ 00:00:00
@@ -72,110 +80,252 @@
         return firstDay.getDay();
     }
 
+    function _isDialog() {
+        if (prop.dialog) {
+            return true;
+        }
+        prop.dialog = true;
+        return false;
+    }
+    function _dialogOff() {
+        prop.dialog = false;
+        return;
+    }
+
+    function _createElement(name, text, cls) {
+        var el = document.createElement(name);
+        if (text) {
+            el.innerHTML = text;
+        }
+        if (cls) {
+            el.className = cls;
+        }
+        return el;
+    }
+
+    function _initSidebar() {
+        var sidebar = document.getElementById('sidebar');
+        var searchResults = document.getElementById('results');
+        var displayCurrent  = document.getElementById('current');
+        displayCurrent.innerHTML = prop.local.month[prop.currentDate.month] + ' ' + prop.currentDate.year;
+
+        sidebar.addEventListener('mousedown', function(e) {
+            if (e.target.id === 'add') {
+                if (_isDialog()) {
+                    return;
+                }
+                var wrap = _createElement('div', null, 'add-form');
+                document.getElementById('sidebar').appendChild(wrap);
+                var close = _createElement('span', 'x', 'btnClose');
+                close.addEventListener('mousedown', function(event){
+                    _dialogOff();
+                    wrap.parentNode.removeChild(wrap);
+                }, false);
+
+                var inputAdd = _createElement('input', null, 'field-add');
+                inputAdd.setAttribute('placeholder', '8 марта, 14:00, праздник');
+                inputAdd.addEventListener('keyup', function(e) {
+
+                }, false);
+
+                var btnCreate = _createElement('button', 'Создать', 'btn-add');
+                btnCreate.addEventListener('mousedown', function(event) {
+                    if (!inputAdd.value) {
+                        console.log('вы ничего не ввели');
+                        return false;
+                    }
+                    var data = inputAdd.value.split(',');
+                    var newDay = parseInt(data[0].split(' ')[0].trim());
+                    var newMonth = prop.local.monthList.indexOf(data[0].split(' ')[1].trim());
+                    var uid = (new Date(prop.currentDate.year, newMonth, newDay, 0,0,0,0)).getTime();
+                    var newEvent = {
+                        uid: uid,
+                        event: data[0].trim(),
+                        date: data[1].trim(),
+                        names: '',
+                        description: data[2].trim()
+                    };
+                    wrap.parentNode.removeChild(wrap);
+                    Events.push(newEvent);
+                    localStorage.setItem('Events', JSON.stringify(Events));
+                    displayCurrent.innerHTML = prop.local.month[prop.currentDate.month] + ' ' + prop.currentDate.year;
+                    _renderTable(); 
+                    _dialogOff();
+
+                }, false);
+
+                wrap.appendChild(close);
+                wrap.appendChild(inputAdd);
+                wrap.appendChild(btnCreate);                
+            } else if (e.target.id === 'update') {
+                location.href = location.href;
+            } else if (e.target.id === 'next') {
+                prop.currentDate.month = (prop.currentDate.month > 10) ? 0 : prop.currentDate.month+1;
+                if (!prop.currentDate.month) {
+                    prop.currentDate.year = prop.currentDate.year+1;
+                }
+                displayCurrent.innerHTML = prop.local.month[prop.currentDate.month] + ' ' + prop.currentDate.year;
+                _renderTable();                
+            } else if (e.target.id === 'prev') {
+                prop.currentDate.month = (!prop.currentDate.month) ? 11 : prop.currentDate.month-1;
+                if (prop.currentDate.month == 11) {
+                    prop.currentDate.year = prop.currentDate.year-1;
+                }
+                displayCurrent.innerHTML = prop.local.month[prop.currentDate.month] + ' ' + prop.currentDate.year;
+                _renderTable();                
+            } else if (e.target.id === 'today') {
+                prop.currentDate = {
+                    month: (new Date()).getMonth(),
+                    year: (new Date()).getFullYear()
+                };
+                displayCurrent.innerHTML = prop.local.month[prop.currentDate.month] + ' ' + prop.currentDate.year;
+                _renderTable();
+            }
+        }, false);        
+
+        
+        sidebar.addEventListener('keyup', function(e) {
+            if (e.target.id == 'search') {
+                var query = e.target.value.toLowerCase();
+                var Ev = Events.map(function(data){
+                    // TODO
+                    // calendar.js:430 Uncaught TypeError: Cannot read property 'event' of null
+                    if (data) {
+                        return data.event + " " + 
+                               data.date  + " " + 
+                               data.names + " " + 
+                               data.description + " | " +
+                               (new Date(data.uid).getDate()) + " " + 
+                               prop.local.monthList[(new Date(data.uid).getMonth())] +
+                               " " + (new Date(data.uid).getFullYear());
+                    }
+                });
+
+                var filterEvents = Ev.filter(function(e) {
+                    if (e) {
+                        return e.toLowerCase().indexOf(query) > -1;
+                    }
+                });
+                
+                
+                if (query == "") {
+                    searchResults.style.display = 'none';
+                    searchResults.innerHTML = "";
+                }else if (filterEvents.length>0) {
+                    searchResults.style.display = 'block';
+                    searchResults.innerHTML = filterEvents.join('<br/>') ;
+                } else {
+                    searchResults.style.display = 'none';
+                    searchResults.innerHTML = "";
+                }
+            }
+        }, false);
+    }
+
     function _hasClass(element, cls) {
         return (' ' + element.className + ' ').indexOf(' ' + cls + ' ') > -1;
     }
 
     function _renderTable() {
         var container, div, title, table, tbody, tr, th, style;
+        var months = [];
+        var aDay;
         // создаем таблицу
         container = document.getElementById("calendar-table");
         container.innerHTML = '';
-        div = document.createElement('div');
-        div.className = "td";
+        div = _createElement('div',null,'td');
         container.appendChild(div);
         //div.innerHTML = "";
         
-        table = document.createElement('table');
+        table = _createElement('table');
         div.appendChild(table);
-        tbody = document.createElement('tbody');
+        tbody = _createElement('tbody');
         table.appendChild(tbody);
  
         // отрисовка таблицы
-
-
-
-        var dayNum = 1;
-        var months = [];
-        var aDay;
-        var DAY = 86400000; // сутки в милисекундах
         // отсчет начинаем с первого календарного дня месяца
-
-        var fDay = _getFirstDayMonth(currentDate.year, currentDate.month);
-        var fDayTS = new Date(currentDate.year, currentDate.month,1,0,0,0,0).getTime();
+        var fDay = _getFirstDayMonth(prop.currentDate.year, prop.currentDate.month);
+        var fDayTS = new Date(prop.currentDate.year, prop.currentDate.month,1,0,0,0,0).getTime();
 
         // вычисляем timestamp выпадающий на понедельник
-        
+        aDay = fDayTS - (prop.DAY*(fDay-1));
 
-        aDay = fDayTS - (DAY*(fDay-1));
-
-
-        for (var row = 0; row < rowTotal; row++) {
-            tr = document.createElement('tr');
+        for (var row = 0; row < prop.rowTotal; row++) {
+            tr = _createElement('tr');
             tbody.appendChild(tr)
             for (var col = 0; col < 7; col++) {
+                
                 if (row == 0) {
-
                     //заполняем шапку календаря днями недели
-                    var td = document.createElement('td');
-
-                    td.innerHTML = local.week[col] + ", " + (new Date(aDay)).getDate();
-
+                    var td = _createElement('td', prop.local.week[col] + ", " + (new Date(aDay)).getDate());
                 } else {
                     // заполняем тело календаря
                     if (row == 1 && col == 0) {
                         months[0] = (new Date(aDay)).getMonth()+1; 
-                    } else if (row == rowTotal-1 && col == 6) {
+                    } else if (row == prop.rowTotal-1 && col == 6) {
                         months[1] = (new Date(aDay)).getMonth()+1;
                         if (months[0] == months[1]) {
                             months.pop();
                         // //console.log('last day', months);
                         }
                     }
-                    td = document.createElement('td');
-                    td.innerHTML = (new Date(aDay)).getDate();
+                    td = _createElement('td', new Date(aDay).getDate());
                 }
+                if (aDay < Date.now()-prop.DAY) {
+                    td.className = "last";
+                } 
                 //td.className = (col == 5 || col == 6) ? 'weekend' : '';
 
                 Events.forEach(function(event) {
                     if (!!event && parseInt(event.uid) == aDay) {
                         td.className = "active";
+                        if (aDay < Date.now()-prop.DAY) {
+                            td.className = "last active";
+                        } 
                         td.innerHTML += "<br/><b>" + event.event +
                             "</b><br/>" + event.date +
-                            "<br/>" + event.names +
-                            "<br/>" + event.description;
+                            "<br/>"     + event.names +
+                            "<br/>"     + event.description + "<br/>";
                     }
                 });
 
-
                 td.setAttribute('data-day', aDay);
-                td.addEventListener("click", function(e){
+                td.addEventListener("mousedown", function(e){
+                    if (_isDialog()) {
+                        return;
+                    }
+                    
                     // console.log(event.target.getAttribute('data-day'));
+
+
                     var el = e.target;
-                    if (_hasClass(el,'active')){
-                        
+                    if (_hasClass(el,'active') || _hasClass(el,'last active')) {
+                        // редактирование
+                        el.className = "active edit";
                         var uid = parseInt(el.getAttribute('data-day'));
                         var data;
                         Events.forEach(function(event) {
-                            data = event;
+                            if (event && event.uid == uid) {
+                                data = event;
+                            }
+
                         });
-                        var wrap = document.createElement('div');
-                        wrap.className = 'add-form-edit';
-                        e.target.appendChild(wrap);
-                        var close = document.createElement('span');
-                        close.className = "btnClose";
-                        close.innerHTML = "x";
-                        close.addEventListener('click', function(event){
+                        var wrap = _createElement('div', null, 'add-form-edit');
+                        document.getElementById('calendar-table').appendChild(wrap);
+                        wrap.style.left = this.offsetLeft + 130 + 'px';
+                        wrap.style.top = this.offsetTop - 20 + 'px';
+
+                        var close = _createElement('span','x', 'btnClose');
+                        close.addEventListener('mousedown', function(e){
+                            _dialogOff();
+                            el.className = "active";
                             wrap.parentNode.removeChild(wrap);
                         }, false);
-
-
-                        var btnClean = document.createElement('button');
-                        btnClean.innerHTML = "очистить";
-                        btnClean.className = "btn-clean";
-                        btnClean.addEventListener('click', function(event) {
+                        var btnClean = _createElement('button', 'очистить', 'btn-clean');
+                        btnClean.addEventListener('mousedown', function(event) {
+                            _dialogOff();
                             wrap.parentNode.removeChild(wrap);
-                            console.log('className удаляем, клетку очищаем и данные тоже сносим');
+                            //console.log('className удаляем, клетку очищаем и данные тоже сносим');
                             el.innerHTML = (new Date(data.uid)).getDate();
                             el.removeAttribute('class');
                             
@@ -188,36 +338,35 @@
                             
                         }, false);
 
+                        // TODO Uncaught TypeError: Cannot read property 'event' of null
+                        // at HTMLTableCellElement.<anonymous> (calendar.js:201)
 
-                        var fieldEvent = document.createElement('h3');
-                        fieldEvent.innerHTML = data.event;
-     
-                        var fieldDate = document.createElement('p');
-                        fieldDate.innerHTML = data.date;
-
-                        var fieldName = document.createElement('p');
-                        fieldName.innerHTML = data.names;
+                        var fieldEvent = _createElement('h3', data.event);
+                        var fieldDate  = _createElement('p',  data.date);
+                        var fieldName  = _createElement('p',  data.names);
 
 
-                        var fieldDescription = document.createElement('textarea');
-                        fieldDescription.className = "field-description";
+                        var fieldDescription = _createElement('textarea', null, 'field-description');
                         fieldDescription.value = data.description;
                         
-                        var btn = document.createElement('button');
-                        btn.innerHTML = "Готово";
-                        btn.className = "btn-add";
-                        btn.addEventListener('click', function(e) {
+                        var btn = _createElement('button','готово','btn-add');
+                        btn.addEventListener('mousedown', function(e) {
+                            _dialogOff();
                             data.description = fieldDescription.value;
+                            el.className = "active";
                             el.innerHTML = (new Date(uid)).getDate() + "<br/><b>" +
                                 data.event +
                                 "</b><br/>" + data.date +
                                 "<br/>" + data.names +
-                                "<br/>" + data.description;
-
+                                "<br/>" + data.description + "<br/>";
+                            Events.forEach(function(event,i) {
+                                if (!!event && data.uid == event.uid) {
+                                    Events[i] = data;
+                                }
+                            });
+                            localStorage.setItem('Events', JSON.stringify(Events));
                             wrap.parentNode.removeChild(wrap);
                         }, false);
-
-
                         wrap.appendChild(close);
                         wrap.appendChild(fieldEvent);
                         wrap.appendChild(fieldDate);
@@ -227,46 +376,44 @@
                         wrap.appendChild(btnClean);
 
                     } else {
-                        var wrap = document.createElement('div');
-                        wrap.className = 'add-form-advanced';
-                        event.target.appendChild(wrap);
-                        var close = document.createElement('span');
-                        close.className = "btnClose";
-                        close.innerHTML = "x";
+
+                        //???
+                        if (_hasClass(el,'last')) {
+                            _dialogOff();
+                            // дата уже в прошлом
+                            return;
+                        }
+                        // создание
+                        var wrap = _createElement('div', null, 'add-form-advanced');
+                        document.getElementById('calendar-table').appendChild(wrap);
+                        wrap.style.left = this.offsetLeft + 130 + 'px';
+                        wrap.style.top = this.offsetTop - 20 + 'px';
+
+                        var close = _createElement('span', 'x', 'btnClose');
                         close.addEventListener('click', function(e){
+                            _dialogOff();
                             wrap.parentNode.removeChild(wrap);
                         }, false);
 
-                        var btn = document.createElement('button');
-                        btn.innerHTML = "Готово";
-                        btn.className = "btn-add";
-
-                        var btnClean = document.createElement('button');
-                        btnClean.innerHTML = "очистить";
-                        btnClean.className = "btn-clean";
-
-                        var fieldUID = document.createElement('input');
+                        var btnDone  = _createElement('button', 'Готово', 'btn-add');
+                        var btnClean = _createElement('button', 'Очистить', 'btn-clean');
+                        var fieldUID = _createElement('input');
                         fieldUID.setAttribute('type', 'hidden');
                         fieldUID.value = el.getAttribute('data-day');
 
-                        var fieldEvent = document.createElement('input');
-                        fieldEvent.className = "field-add";
+                        var fieldEvent = _createElement('input', null, 'field-add');
                         fieldEvent.setAttribute('placeholder','Событие');
      
-                        var fieldDate = document.createElement('input');
-                        fieldDate.className = "field-date";
+                        var fieldDate = _createElement('input', null, 'field-date');
                         fieldDate.setAttribute('placeholder', 'Время события');
 
-                        var fieldName = document.createElement('input');
-                        fieldName.className = "field-name";
+                        var fieldName = _createElement('input', null, 'field-name');
                         fieldName.setAttribute('placeholder', 'Имена участников');
 
-                        var fieldDescription = document.createElement('textarea');
-                        fieldDescription.className = "field-description";
+                        var fieldDescription = _createElement('textarea', null, 'field-description');
                         fieldDescription.setAttribute('placeholder', 'Описание');
 
-                        btn.addEventListener('click', function(e){
-                            console.log(e.target);
+                        btnDone.addEventListener('mousedown', function(e){
                             var data = {
                                 uid: parseInt(fieldUID.value),
                                 event: fieldEvent.value,
@@ -274,11 +421,12 @@
                                 names: fieldName.value,
                                 description: fieldDescription.value
                             };
+                            _dialogOff();
                             Events.push(data);
                             localStorage.setItem('Events', JSON.stringify(Events));
                             wrap.parentNode.removeChild(wrap);
                             _renderTable(); 
-
+                            
                         }, false);
 
                         wrap.appendChild(close);
@@ -286,162 +434,19 @@
                         wrap.appendChild(fieldDate);
                         wrap.appendChild(fieldName);
                         wrap.appendChild(fieldDescription);
-                        wrap.appendChild(btn);
+                        wrap.appendChild(btnDone);
                         wrap.appendChild(btnClean);
                     }
-
-
                 }, false);
                 tr.appendChild(td);
-                aDay += DAY;
+                aDay += prop.DAY;
             }
         }
-
     }
-
     function _init() {
-
-        var btnAdd = document.getElementById('add');
-
-        btnAdd.addEventListener('click', function(event){
-            var wrap = document.createElement('div');
-            wrap.className = 'add-form';
-            document.getElementById('sidebar').appendChild(wrap);
-            var close = document.createElement('span');
-            close.className = "btnClose";
-            close.innerHTML = "x";
-            close.addEventListener('click', function(event){
-                wrap.parentNode.removeChild(wrap);
-            }, false);
-
-            
-
-
-
-            var inputAdd = document.createElement('input');
-            inputAdd.className = "field-add";
-            inputAdd.setAttribute('placeholder', '8 марта, 14:00, праздник');
-            inputAdd.addEventListener('keyup', function(e) {
-
-            }, false);
-
-            var btn = document.createElement('button');
-            btn.innerHTML = "Создать";
-            btn.className = "btn-add";
-            btn.addEventListener('click', function(event) {
-                var monthList = [
-                    'января',
-                    'февраля',
-                    'марта',
-                    'апреля',
-                    'мая',
-                    'июня',
-                    'июля',
-                    'августа',
-                    'сентября',
-                    'октября',
-                    'ноября',
-                    'декабря'
-                ];
-                var data = inputAdd.value.split(',');
-                var newDay = parseInt(data[0].split(' ')[0].trim());
-                var newMonth = monthList.indexOf(data[0].split(' ')[1].trim());
-                var uid = (new Date(currentDate.year, newMonth, newDay, 0,0,0,0)).getTime();
-                var newEvent = {
-                    uid: uid,
-                    event: data[0].trim(),
-                    date: data[1].trim(),
-                    names: '',
-                    description: data[2].trim()
-                };
-                wrap.parentNode.removeChild(wrap);
-                Events.push(newEvent);
-                localStorage.setItem('Events', JSON.stringify(Events));
-                displayCurrent.innerHTML = local.month[currentDate.month] + ' ' + currentDate.year;
-                _renderTable(); 
-
-            }, false);
-
-            wrap.appendChild(close);
-            wrap.appendChild(inputAdd);
-            wrap.appendChild(btn);
-
-        }, false);
-
-        var btnUpdate = document.getElementById('update');
-        btnUpdate.addEventListener('click', function(event){
-            location.href = location.href;
-        }, false);
-
-        var displayCurrent  = document.getElementById('current');
-        displayCurrent.innerHTML = local.month[currentDate.month] + ' ' + currentDate.year;
-
-        var btnNext = document.getElementById('next');
-
-
-        var btnPrev = document.getElementById('prev');
-        btnPrev.addEventListener('click', function(event){
-            currentDate.month = (!currentDate.month) ? 11 : currentDate.month-1;
-            if (currentDate.month == 11) {
-                currentDate.year = currentDate.year-1;
-            }
-            displayCurrent.innerHTML = local.month[currentDate.month] + ' ' + currentDate.year;
-            _renderTable();
-        }, false);
-
-        var searchResults = document.getElementById('results');
-
-        var btnToday = document.getElementById('today');
-        btnToday.addEventListener('click', function(event){
-            currentDate = {
-                month: (new Date()).getMonth(),
-                year: (new Date()).getFullYear()
-            };
-            displayCurrent.innerHTML = local.month[currentDate.month] + ' ' + currentDate.year;
-            _renderTable();
-        }, false);
-
-        btnNext.addEventListener('click', function(event){
-            currentDate.month = (currentDate.month > 10) ? 0 : currentDate.month+1;
-            if (!currentDate.month) {
-                currentDate.year = currentDate.year+1;
-            }
-            displayCurrent.innerHTML = local.month[currentDate.month] + ' ' + currentDate.year;
-            _renderTable();
-             // перерисовываем календарь
-        }, false);
-
-        var inputSearch = document.getElementById('search');
-        inputSearch.addEventListener('keyup', function(e) {
-
-        var query = this.value.toLowerCase();
-        var Ev = Events.map(function(event){
-            return event.event + " " + event.date + " " + event.names + " " + event.description;
-        });
-
-        var filterEvents = Ev.filter(function(event) {
-          return event.toLowerCase().indexOf(query) > -1;
-        });
-        
-        
-        if (query == "") {
-            searchResults.style.display = 'none';
-            searchResults.innerHTML = "";
-        }else if (filterEvents.length>0) {
-            searchResults.style.display = 'block';
-            searchResults.innerHTML = filterEvents.join('<br/>');
-        } else {
-            searchResults.style.display = 'none';
-            searchResults.innerHTML = "";
-        }
-
-        }, false);
-
+        _initSidebar();
         _renderTable();
-
-
     }
-
 
     return {
         get: function() {
