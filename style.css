@@ -13,7 +13,7 @@ body { margin: 0; padding: 0; /*background: url(bg.jpg) top center;*/ font-famil
 .btn-next { width: 16px; height: 16px; background: #fff url(icons.jpg)1px -16px no-repeat; color: transparent; font-size: 8px;}
 .btn-today {height: 18px; line-height: 18px; vertical-align: middle;}
 .panel-left { width: 405px; float: left;}
-.panel-right { width: 485px; float: left; text-align: right; position: relative;}
+.panel-right { width: 405px; float: left; text-align: right; position: relative;}
 .search { height: 22px; width: 180px; border-radius: 3px; border: 1px solid #e2e2e2; padding: 0 10px;  }
 .icon-search { background: url(icons.jpg) 0px 5px no-repeat; width: 15px; height: 22px; display: inline-block; vertical-align: middle;}
 .calendar-body { padding: 8px 40px 10px 40px;}
@@ -78,6 +78,7 @@ td.current {
     border-radius: 3px;
     position: absolute;
     z-index: 2; 
+    top: 70px;
 }
 
 .search-results {
@@ -145,4 +146,4 @@ td.current {
 
 .add-form>button { height: 22px;}
 
-#calendar-table {position: relative;}
+#calendar-table {position: relative; padding: 8px 40px 10px 40px; }
